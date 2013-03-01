@@ -1,0 +1,49 @@
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script type=text/javascript>
+jQuery(document).ready(function(){
+
+	/*Set the default icon*/
+	chrome.browserAction.setIcon({path:"youtube_x.jpg"});
+
+// 	Every time a youtube window opens:
+// 	- Check for facebook connection
+// 	- Check if any friend exist
+
+	var YoutubeLink = "http://www.youtube.com";
+	/*Listener for a new url*/
+	chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+		if (changeInfo.status == "complete" ) {
+			if (localStorage.yourecord=="on") {
+				/*Check if there is a youtube url*/
+				if (tab.url.substring(0, YoutubeLink.length) == YoutubeLink) {
+					/*Check if Youtube Tab is open for more than 20 seconds*/
+// 					setTimeout("Func1()", 20000);
+// 					chrome.tabs.get(1234, function(tab) { if (!tab) { console.log('tab does not exist'); }}); 
+
+					/*Find Video id*/
+					var video_id = tab.url.split('v=')[1];
+					var ampersandPosition = video_id.indexOf('&');
+					if(ampersandPosition != -1) {
+						video_id = video_id.substring(0, ampersandPosition);
+					}
+					/*Send it to DataBase*/
+					var url = "http://cyberang3l.ath.cx:33335/youtube/ExtResponse.php?youtube="+video_id;
+					$.getJSON(url + "&jsoncallback=?", function(data){
+						Answer = data.Answer;
+						if (Answer == "NOT_LOGGED_IN") {
+							var notification = webkitNotifications.createHTMLNotification(
+								'http://cyberang3l.ath.cx:33335/youtube/Login.php'  // html url - can be relative
+							);
+							notification.show();
+							setTimeout(function() { 
+								notification.cancel(); 
+							}, 3000);
+
+						}
+					});
+				}
+			}
+		}
+	});
+});
+</script>

@@ -1,0 +1,76 @@
+<script>
+
+	function IsYoutube(url) {
+		var YoutubeLink = "http://www.youtube.com";
+		if (url.substring(0, YoutubeLink.length) == YoutubeLink) return true;
+		else return false;
+	}
+
+	function GetVideoId(url){
+		var video_id = url.split('v=')[1];
+		if (video_id == url) return false;
+		var ampersandPosition = video_id.indexOf('&');
+		if (ampersandPosition != -1) return  video_id.substring(0, ampersandPosition);
+		else return video_id.substr(0);
+	}
+
+	/*Put page action*/
+	chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+		if (IsYoutube(tab.url) == true)
+			chrome.pageAction.show(tabId);
+
+
+		/*Store Video To Server!*/
+		if (changeInfo.status == "complete" ) {
+			if (localStorage.yourecord=="on") {
+				/*Check if there is a youtube url*/
+				video_id = GetVideoId(tab.url);
+				if (video_id != false) {
+					/*Check if Youtube Tab is open for more than 20 seconds*/
+// 					setTimeout("Func1()", 20000);
+// 					chrome.tabs.get(1234, function(tab) { if (!tab) { console.log('tab does not exist'); }}); 
+					/*Send it to DataBase*/
+					var url = "http://cyberang3l.ath.cx:33335/youtube/ExtResponse.php?youtube="+video_id;
+					$.getJSON(url + "&jsoncallback=?", function(data){
+						Answer = data.Answer;
+// 						if (Answer == "NOT_LOGGED_IN") {
+// 							var notification = webkitNotifications.createHTMLNotification(
+// 								'http://cyberang3l.ath.cx:33335/youtube/Login.php'  // html url - can be relative
+// 							);
+// 							notification.show();
+// 							setTimeout(function() { 
+// 								notification.cancel(); 
+// 							}, 3000);
+// 
+// 						}
+					});
+				}
+			}
+		}
+
+
+	});
+
+	chrome.tabs.getSelected(null, function(tab) {
+		if (IsYoutube(tab.url) == true)
+			chrome.pageAction.show(tab.id);
+	});
+	
+	/*Send request to current tab when page action is clicked*/
+	chrome.pageAction.onClicked.addListener(function(tab) {
+		chrome.tabs.getSelected(null, function(tab) {
+			VideoId = GetVideoId(tab.url);
+			if (VideoId == false) return -1;
+			chrome.tabs.sendRequest(
+				//Selected tab id
+				tab.id,
+				//Params inside a object data
+				{callFunction: "toggleSidebar", videoid: VideoId}, 
+				//Optional callback function
+				function(response) {
+					console.log(response);
+				}
+			);
+		});
+	});
+</script>

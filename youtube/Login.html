@@ -1,0 +1,91 @@
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script>
+jQuery(document).ready(function(){
+	window.fbAsyncInit = function() {
+		
+		FB.init({
+			appId      : '166815126764719', // App ID
+			channelUrl : 'http://cyberang3l.ath.cx:33335/youtube/channel.html', // Channel File
+			status     : true, // check login status
+			cookie     : true, // enable cookies to allow the server to access the session
+			xfbml      : true  // parse XFBML
+		});
+		// Additional initialization code here
+		FB.getLoginStatus(function(response) {
+			if (response.status === 'connected') {
+				FB.api('/me', function(response2) {
+					
+				});
+					
+			} 
+			else if (response.status === 'not_authorized') {
+				$("#username").append("<span style='cursor:pointer;font-weight:bold;'>Please Login With Facebook</span>");
+				$("#username").show();
+				$("#username").click(function(){
+					FB.login(function(response2) {
+						if (response2.authResponse) {
+// 							window.location.reload();
+							window.close();
+						} else {
+							document.write('User cancelled login or did not fully authorize.');
+						}
+					}, {perms:'read_stream,publish_stream'});
+				});
+
+			} else {
+				$("#username").append("<span style='cursor:pointer;font-weight:bold;'>Please Login With Facebook</span>");
+				$("#username").show();
+				$("#username").click(function(){
+					FB.login(function(response2) {
+						if (response2.authResponse) {
+							window.close();
+// 							window.location.reload();
+						} else {
+							document.write('User cancelled login or did not fully authorize.');
+						}
+					}, {perms:'read_stream,publish_stream'});
+				});
+			}
+		});
+
+	};
+
+	// Load the SDK Asynchronously
+	(function(d){
+		var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+		if (d.getElementById(id)) {return;}
+		js = d.createElement('script'); js.id = id; js.async = true;
+		js.src = "//connect.facebook.net/en_US/all.js";
+		ref.parentNode.insertBefore(js, ref);
+	}(document));
+
+	$("#record").click(function () {
+		$.ajax({
+			type : 'POST',
+			url : 'SessionResult.php',
+			dataType : 'json',
+			data: {
+				request : "Change"
+			},
+			success : function(data){
+				$("#record").html("Recording Stopped!");
+				$("#record").show();
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+	});
+
+
+});
+</script>
+
+</head>
+<body>
+<div id="fb-root"></div>
+<div id="username"></div>
+<div id="record"  style='cursor:pointer;font-weight:bold;font-size:small;text-align:right;'>Stop Recording</div>
+</body>
+</html>

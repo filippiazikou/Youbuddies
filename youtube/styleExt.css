@@ -1,0 +1,270 @@
+a:link, a:active, a:visited {
+  text-decoration: none;
+}
+
+.header {
+    background: rgb(39, 39, 39);    
+    border-left: 2px solid #333232;
+    border-bottom: 2px solid #333232;
+    border-radius:5px;
+/*    color:white;*/
+/*     float:left; */
+/*     margin-left:2px; */
+/*     width:100%; */
+    height: 50px;
+    padding: 15px;
+/*     margin-right: 10px; */
+    box-shadow: 0 4px 8px -2px black;
+
+}
+
+#notYou{
+  float:left;
+  margin-left:65px;
+  font-size: 10px;
+  color:white;
+}
+#notYou:hover{
+  text-decoration: underline;
+  cursor:pointer;
+}
+
+#sharing{
+  float:left;
+  cursor:pointer;
+  height: 17px;
+}
+
+#sharing:hover{
+  text-decoration: underline;
+}
+
+#only_this{
+  float:left;
+  color: rgb(149, 149, 149);
+  cursor:pointer;
+  height: 17px;
+}
+#only_this:hover{
+  text-decoration: underline;
+}
+
+#options{
+  position:relative;
+  float:right;
+  width: 130px;
+  height: 64px;
+  font-family: 'Open Sans', sans-serif;
+  color: rgb(149, 149, 149);
+  font-size: 13px;
+  vertical-align:text-top;
+  font-weight: 500;
+  text-align:left;
+  margin-top: -30px;
+  margin-bottom:15px;
+}
+
+#record {
+  text-align:left;
+}
+
+#login {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 550;	
+  width: 150px;
+  height:22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgb(149, 149, 149);
+}
+
+#login:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#logout {
+}
+
+#homefriendName {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 550;
+  margin-left: 65px;
+  width: 150px;
+  height:22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgb(149, 149, 149);
+}
+
+#homefriendName:hover {
+  text-decoration: underline;
+}
+
+#homePic {
+  float: left;
+  z-index: 1;
+  position:absolute;
+/*   border: 1px solid #959595; */
+  margin: 1px;
+/*   border-radius: 5px; */
+}
+
+#homePicBg {
+  float: left;
+  z-index: 0; 
+  position:absolute;
+/*   background:white; */
+  border: 0.1px solid #959595;
+  width:52px;
+  height:52px;
+  padding:1px;
+/*   border-radius: 5px; */
+/*   box-shadow: 0pt 1px 1px white; */
+  /*margin-top:0px;
+ margin-left: -3px;*/
+}
+#sharingText1 {
+	float:right;
+	line-height:16px;
+}
+
+#sharingText2 {
+	float:right;
+	line-height:16px;
+}
+
+#sharingText:hover {
+  text-decoration:underline;
+}
+
+.init{
+	/*set the div in the center of the screen*/
+	position:relative;
+/*	top:5%;
+	left:5%;*/
+	height:75%;
+	width:100%;
+	overflow:auto;
+	font-family: 'Open Sans', sans-serif;
+}
+
+.head{
+	text-align: right;
+	position:absolute;
+/* 	height:5%; */
+/* 	width:100%; */
+	
+}
+
+.main{
+	/*set the div in the center of the screen*/
+	position:relative;
+/* 	top:75px; */
+/* 	width:100%; */
+/* 	height:75%; */
+	overflow:auto;
+	margin-top:1px;
+	font-family: 'Open Sans', sans-serif;
+}
+
+.footer{
+	font-family: 'Open Sans', sans-serif;
+	font-size: 12px;
+	color: rgb(149, 149, 149);
+	/*set the div in the center of the screen*/
+/* 	width:100%; */
+	height:49px;
+	line-height:15px;
+	padding: 5px;
+	background: rgb(39, 39, 39);
+	position: relative;
+	margin-top:0px;
+	border-left: 2px solid #333232;
+	border-bottom: 2px solid #333232;
+	border-radius:5px;
+}
+
+#invite{
+}
+
+#invite:hover{
+  cursor:pointer;
+  text-decoration: underline;
+}
+
+#app:hover{
+  cursor:pointer;
+  text-decoration: underline;
+}
+#share:hover{
+  cursor:pointer;
+  text-decoration: underline;
+}
+
+
+.separator{
+	height:1px;
+	background:#cdcbcb;
+	/*   border-bottom:2px solid #ededed; */
+	/* border-top:1px solid #2c2c2c; */
+	border-top:1px solid #ededed;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#friends {
+  width: 100%;
+}
+
+.relatedFriend {
+	clear:both;
+	margin-top:5px;
+	margin-bottom:5px;
+	margin-right:5px;
+	margin-left:5px;
+	/*   border: 1px solid #333232; */
+}
+
+#friendPic {
+	float: left;
+	-webkit-transition: all 0.5s ease-out;
+	-moz-transition: all 0.5s ease;
+	-o-transition: all 0.5s ease;
+}
+
+#friendPic:hover {
+	-webkit-box-shadow: 5px 5px 5px rgba(0,0,0,0.2);
+	-moz-box-shadow: 5px 5px 5px rgba(0,0,0,0.2);
+	box-shadow: 5px 5px 5px rgba(0,0,0,0.2);
+}
+
+#friendName {
+	float: left;
+	font-size: 15px;
+	color:#272727;
+	font-weight:bold;
+	margin-left: 15px;
+}
+
+
+
+#friendVideos {
+	float:left;
+	font-size: 14px;
+	clear:right;
+	height:50px;
+	width: 70%;
+	margin-top:5px;
+	margin-left:11px;
+	padding-left: 4px;
+	margin-bottom: 10px;
+	/*       border: 1px solid #ededed; */
+	
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

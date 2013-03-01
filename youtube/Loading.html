@@ -1,0 +1,385 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="styleExt.css" />
+<link href='http://fonts.googleapis.com/css?family=Open+Sans&subset=latin,latin-ext' rel='stylesheet'
+type='text/css'>
+
+
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script>
+
+jQuery(document).ready(function(){
+	var FacebookID="error";
+	var FBname="";
+	DisplayRecord();
+
+	window.fbAsyncInit = function() {
+		
+		FB.init({
+			appId      : '166815126764719', // App ID
+			channelUrl : 'http://cyberang3l.ath.cx:33335/youtube/channel.html', // Channel File
+			status     : true, // check login status
+			cookie     : true, // enable cookies to allow the server to access the session
+			xfbml      : true  // parse XFBML
+		});
+		var init = true;
+		// Additional initialization code here
+		FB.getLoginStatus(function(response) {
+			if (response.status === 'connected') {
+				FB.api('/me', function(response2) {
+					if (init == true ){
+						FBname = response2.name;
+						FacebookID = response.authResponse.userID;
+						displayHeader();
+//  						$("#username").append(response2.name+" - <span style='cursor:pointer;font-style:italic;text-decoration:underline;'  onMouseOver='this.style.cursor=\'hand\'' onclick='FB.logout(function(response){window.location.reload();});' href=''>Not You?</span>");
+// 						$("#username").show();
+						init = false;
+						main(response.authResponse.userID);
+					}
+				});
+					
+			} 
+			else if (response.status === 'not_authorized') {
+				$(".header").append('<span id="login">Please Login With Facebook</span>');
+				$(".header").show();
+				$(".main").html('');
+				$(".header").click(function(){
+					FB.login(function(response2) {
+						if (response2.authResponse) {
+							window.location.reload();
+						} else {
+							document.write('Facebook login canceled');
+						}
+					}, {perms:'read_stream,publish_stream'});
+				});
+
+			} else {
+				$(".header").append('<span id="login">Please Login With Facebook</span>');
+				$(".header").show();
+				$(".main").html('');
+				$(".header").click(function(){
+					FB.login(function(response2) {
+						if (response2.authResponse) {
+							window.location.reload();
+						} else {
+							document.write('Facebook login canceled');
+						}
+					}, {perms:'read_stream,publish_stream'});
+				});
+			}
+		});
+
+	};
+
+	// Load the SDK Asynchronously
+	(function(d){
+		var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+		if (d.getElementById(id)) {return;}
+		js = d.createElement('script'); js.id = id; js.async = true;
+		js.src = "//connect.facebook.net/en_US/all.js";
+		ref.parentNode.insertBefore(js, ref);
+	}(document));
+
+
+	function main(FacebookID){
+		mode =  window.location.search.substring().substr(6, 6);
+		if (mode == "videos") {
+			VideoID = window.location.search.substring().substr(18);
+			$.ajax({
+				type : 'POST',
+				url : 'YouFriends.php',
+				dataType : 'json',
+				async: true,
+				data: {
+					videoid : VideoID,
+					facebookid: FacebookID
+				},
+				success : function(data){
+					var relatedFriends = '<br clear="all"><span style="font-size:15px; font-weight: bold;color:#272727; float:left;clear:both;"><img src="img/friends.png" style="margin-right:3px;">Related  Friends</span><br>';
+					var separator = '<br clear="all"><div class="separator" ></div>';
+					jQuery.each(data, function(index,value) {
+
+						FriendId = index;
+						name = value.name;
+						relatedFriends = relatedFriends + '<div class="relatedFriend">';
+						relatedFriends = relatedFriends + '<a id="friendPic" href="http://www.facebook.com/profile.php?id=' + FriendId +'" target="_blank"><img src="https://graph.facebook.com/' + FriendId + '/picture" title="' + name + '"/></a>';
+						relatedFriends = relatedFriends + '<div id="friendName">'+ name +'</div>';
+						relVideos = value.related_videos;
+						relatedFriends = relatedFriends + '<div id="friendVideos">';
+						jQuery.each(relVideos, function(index,value) {
+							title = value.title;
+							youtubeid = value.youtubeid;
+							playButton = '<a href="http://www.youtube.com/watch?v=' +youtubeid+ '" target="_blank" ><img id="playbutton" src="./img/youplay.png" title="Play" /></a>';
+							relatedFriends = relatedFriends + playButton + '<a href="http://www.youtube.com/watch?v=' +youtubeid+ '" target="_blank" id="playTitle">' + title+ '</a><br>' ;
+								
+						});
+						relatedFriends = relatedFriends + '</div></div>';
+						relatedFriends = relatedFriends + separator;
+						$("#friends").html(relatedFriends);
+						
+					});
+					$("#friends").html(relatedFriends);
+					if (data == '')
+						$("#friends").html('<span style="font-size:11px; color:#272727; float:left;clear:both;"> No Related Friends Found</span>');
+
+					$("#friends").show();
+					UpdateDatabase();	
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					$("#friends").html('<span style="font-size:11px; color:#272727; float:left;clear:both;">Sorry, An occured. Try Again! </span>');
+
+					$("#friends").show();
+					UpdateDatabase();
+				}
+			});
+		}
+
+		else if (mode == "search") {
+			end =  window.location.search.substring().search("&");
+			var search_query = window.location.search.substring().substr(18, end);
+			$.ajax({
+				type : 'POST',
+				url : 'YoutubeSearchPage.php',
+				dataType : 'json',
+				async: true,
+				data: {
+					query : search_query,
+					facebookid: FacebookID
+				},
+				success : function(data){
+					var relatedFriends = '<br clear="all"><span style="font-size:15px; font-weight: bold;color:#272727; float:left;clear:both;"><img src="img/friends.png" style="margin-right:3px;">Related  Friends</span><br>';
+					var separator = '<br clear="all"><div class="separator"></div>';
+					jQuery.each(data, function(index,value) {
+
+						FriendId = index;
+						name = value.name;
+						relatedFriends = relatedFriends + '<div class="relatedFriend">';
+						relatedFriends = relatedFriends + '<a id="friendPic" href="http://www.facebook.com/profile.php?id=' + FriendId +'" target="_blank"><img src="https://graph.facebook.com/' + FriendId + '/picture" title="' + name + '"/></a>';
+						relatedFriends = relatedFriends + '<div id="friendName">'+ name +'</div>';
+						relVideos = value.related_videos;
+						relatedFriends = relatedFriends + '<div id="friendVideos">';
+						jQuery.each(relVideos, function(index,value) {
+							title = value.title;
+							youtubeid = value.youtubeid;
+							playButton = '<a href="http://www.youtube.com/watch?v=' +youtubeid+ '" target="_blank" ><img id="playbutton" src="./img/youplay.png" title="Play" /></a>';
+							relatedFriends = relatedFriends + playButton + '<a href="http://www.youtube.com/watch?v=' +youtubeid+ '" target="_blank" id="playTitle">' + title+ '</a><br>' ;
+								
+						});
+						relatedFriends = relatedFriends + '</div></div>';
+						relatedFriends = relatedFriends + separator;
+						$("#friends").html(relatedFriends);
+						
+					});
+					$("#friends").html(relatedFriends);
+					if (data == '')
+						$("#friends").html('<span style="font-size:11px; color:#272727; float:left;clear:both;"> No Related Friends Found</span>');
+
+						$("#friends").show();
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+				}
+			});
+		}
+	}
+	
+	/*Retrieve Data from News Feed and Wall!*/
+	function UpdateDatabase() {
+		$.ajax({
+			type : 'POST',
+			url : 'UpdateDatabase.php',
+			dataType : 'json',
+			success : function(data){
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+
+	}
+
+	function InsertThisVideoToDataBase() {
+		mode =  window.location.search.substring().substr(6, 6);
+		if (mode == "videos") {
+			VideoID = window.location.search.substring().substr(18);
+			$.ajax({
+					type : 'GET',
+					url : 'ExtResponse.php',
+					dataType : 'json',
+					data: {
+						youtube : VideoID,
+						source: "sidebar"
+					},
+					success : function(data){
+						("#only_this").html('<div id="only_this">Shared!</div>');
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+					}
+			});
+		}
+	}
+
+
+	function DisplayRecord() {
+		$.ajax({
+			type : 'POST',
+			url : 'SessionResult.php',
+			dataType : 'json',
+			data: {
+				request : "GetValue"
+			},
+			success : function(data){
+				if (data.msg == "off") {
+					html = '<div id="sharing"><div id="sharingText1"> Start YouBudding</div><img style="float:right; margin-right:2px;" src="./img/sharing_on.png" title="Start Sharing""/></div>';
+					$("#record").html(html);
+					$("#record").show();
+					$("#only_this").show();
+				}
+				else if  (data.msg == "on") {
+					html = '<div id="sharing"><div id="sharingText1"">Stop YouBudding</div><img style="float:right;margin-right:2px;" src="./img/sharing_off.png" title="Stop Sharing""/></div>';
+					$("#record").html(html);
+					$("#record").show();
+					$("#only_this").hide();
+					InsertThisVideoToDataBase();
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+	}
+
+	function displayHeader() {
+		name = FBname;
+		html ='';
+		html= html + '<div><a href="http://www.facebook.com/profile.php?id=' + FacebookID +'" target="_blank"><div id="homePicBg"><img id="homePic" src="https://graph.facebook.com/' + FacebookID + '/picture" title="' + name + '"/></div></a>';
+		notYou = '<div id="notYou" onMouseOver="this.style.cursor=\"hand\"" onclick="FB.logout(function(response){window.location.reload();});" href="">Not You?</div>';
+		html= html+ '<a href="http://www.facebook.com/profile.php?id=' + FacebookID +'" target="_blank"><div id="homefriendName">'+ name +'</div></a></div>'+notYou;
+		html= html+ '<div id="options"><span id="record" >Start / Stop Sharing</span><br><div id="only_this" ><div id="sharingText2">YouBudd it</div><img style="float:right; margin-right:2px;" src="./img/sharing_one.png" title="Sharing One""/></div></div>';
+	
+		$(".header").html(html);
+		DisplayRecord();
+	}
+
+	
+	$("body").delegate("#record", "click", function () {
+		$.ajax({
+			type : 'POST',
+			url : 'SessionResult.php',
+			dataType : 'json',
+			data: {
+				request : "Change"
+			},
+			success : function(data){
+				DisplayRecord();
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+	});
+
+// 	$("#record").hover(
+// 		function () {
+// 			this.style.cursor='pointer' 
+// 			
+// 		}, 
+// 		function () {
+// 			this.style.background='#FFFFFF';
+// 	});
+
+	
+	var OnlyThisDone = false;
+	$("body").delegate("#only_this", "click", function () {
+		if (OnlyThisDone == false) {
+			OnlyThisDone = true;
+			InsertThisVideoToDataBase();
+		}
+	});
+
+	$("body").delegate("#sharing", "mouseover", function () {
+		document.getElementById("sharingText1").style.textDecoration = "underline";
+	});
+
+	$("body").delegate("#sharing", "mouseout", function () {
+		document.getElementById("sharingText1").style.textDecoration = "none";
+	});
+
+	$("body").delegate("#only_this", "mouseover", function () {
+		document.getElementById("sharingText2").style.textDecoration = "underline";
+	});
+
+	$("body").delegate("#only_this", "mouseout", function () {
+		document.getElementById("sharingText2").style.textDecoration = "none";
+	});
+
+
+	$("#invite").click(function () {
+			window.open("http://cyberang3l.ath.cx:33335/youtube/InviteFriends.php");
+	});
+	
+
+	$("#app").click(function () {
+			window.open("apps.facebook.com/youtube_buddies");
+	});
+
+// 	$("body").delegate("#only_this", "mouseover", function () {
+// 		$(this).css("text-decoration", "underline");
+// 
+// 	});
+// 
+// 	$("body").delegate("#sharing", "mouseover", function () {
+// 	});
+
+	var WallDone = false;
+	$("#share").click(function () {
+		mode =  window.location.search.substring().substr(6, 6);
+		if (mode == "videos" && WallDone == false) {
+			WallDone = true;
+			var videoid = window.location.search.substring().substr(18);
+			$.ajax({
+					type : 'POST',
+					url : 'PostToWall.php',
+					dataType : 'json',
+					data: {
+						videourl : "http://www.youtube.com/watch?v="+videoid
+					},
+					success : function(data){
+						if (data.msg == "success") {
+							$("#share").append(" ... Successfully posted on Your Wall");
+						}
+						else {
+							$("#share").append(" ... An error occured! Try Again!");
+						}
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						$("#share").append(" ... An error occured! Try Again!");
+					}
+			});
+
+			$("#share").show();
+		}
+
+	});
+});
+</script>
+</head>
+<body>
+<div class="header" >
+</div>
+
+<div id="fb-root"></div>
+<div class="init">
+	<div class="main">
+<!-- 		<div class="separator2" style="height:1px;background:#4a4a4a;border-bottom:2px solid #ededed;border-top:2px solid #ededed;"></div> -->
+		<div id="friends">
+			<p align="middle"><img src="loading9.gif"/></p>
+			<p align="middle" style="font-size:small;">Loading Related Friends</p> 
+		</div>
+	</div>
+</div>
+
+<div class="footer" >
+<span id="invite" ><img style="margin-right:3px;"src="./img/friends.png" />Invite Your Friends</span><br>
+<span id="app" ><img style="margin-right:3px;"src="./img/facebookIcon.png" />Visit Application</span><br>
+<span id="share" ><img style="margin-right:3px;"src="./img/timeline.png" />Share Video on your timeline</span>
+</div>
+
+</body>
+</html>

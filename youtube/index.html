@@ -1,0 +1,776 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Youtube Buddies</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="style.css" />
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
+<script type="text/javascript" src="slimScroll.js"></script>
+<script type="text/javascript">
+
+function delete1() {	$(this).attr('src','img/delete1.png');}
+function delete2() {	$(".deletepost").attr('src','img/delete2.png');}
+
+function showResult(str){
+
+
+}
+
+$(document).ready(function(){
+
+	var FacebookID="error";
+	var FBname="";
+	var relFriendsAJAX = $.ajax({});
+
+	/*Login to the Application*/
+	window.fbAsyncInit = function() {
+		FB.init({
+			appId      : '166815126764719', // App ID
+			channelUrl : 'http://cyberang3l.ath.cx:33335/youtube/channel.html', // Channel File
+			status     : true, // check login status
+			cookie     : true, // enable cookies to allow the server to access the session
+			xfbml      : true  // parse XFBML
+		});
+		
+		// Additional initialization code here
+		FB.getLoginStatus(function(response) {
+			if (response.status === 'connected') {
+				FB.api('/me', function(response2) {
+					FacebookID = response.authResponse.userID;
+					FBname = response2.name;
+					Numbers();
+					UpdateDatabase();
+					Home();
+				});
+					
+			} 
+			else if (response.status === 'not_authorized') {
+				FB.login(function(response) {
+					if (response.authResponse) {
+						window.location.replace("http://cyberang3l.ath.cx:33335/youtube/?update=true");
+					} else {
+						document.write('User cancelled login or did not fully authorize.');
+					}
+				}, {perms:'read_stream,publish_stream,offline_access'});
+
+			} else {
+				// the user isn't logged in to Facebook.
+				FB.login(function(response) {
+					if (response.authResponse) {
+						window.location.replace("http://cyberang3l.ath.cx:33335/youtube/?update=true");
+					} else {
+						document.write('User cancelled login or did not fully authorize.');
+					}
+				}, {perms:'read_stream,publish_stream,offline_access'});
+			}
+		});
+
+		
+
+	};
+
+// 	Load the SDK Asynchronously
+	(function(d){
+		var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+		if (d.getElementById(id)) {return;}
+		js = d.createElement('script'); js.id = id; js.async = true;
+		js.src = "//connect.facebook.net/en_US/all.js";
+		ref.parentNode.insertBefore(js, ref);
+	}(document));
+
+	
+
+
+
+	/*Retrieve Data from News Feed and Wall!*/
+	function UpdateDatabase() {
+		$.ajax({
+			type : 'POST',
+			url : 'UpdateDatabase.php',
+			dataType : 'json',
+			async: true,
+			success : function(data){
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+
+	}
+
+	function Home() {
+		name = FBname;
+		html ='';
+		html= html + '<a href="http://www.facebook.com/profile.php?id=' + FacebookID +'" target="_blank"><div id="homePicBg"><img id="homePic" src="https://graph.facebook.com/' + FacebookID + '/picture" title="' + name + '"/></div></a>';
+		html= html+ '<a href="http://www.facebook.com/profile.php?id=' + FacebookID +'" target="_blank"><div id="homefriendName">'+ name +'</div></a>';
+		
+		var number = GetNumberOfVideos();
+		html=html+ '<div id="homeNumberVideos">'+ number +'<br> <span style="font-size:11px;font-weight: normal;">videos watched</span></div>';
+		html = html + '<div id="topCat"></div>';
+		html=html+ '<div id="moreCat">show categories</div>';
+
+		$(".links").hide();
+		$(".preview").hide();
+		$("#livesearch").hide();
+		
+		clearSelectedCategory();
+
+		GetTopCategories();
+
+		$("#homeHeader").html(html);
+// 		$("#homeVideos").hide();
+		$("#homeVideos").html('<img src="./img/loading.gif" title="Loading..." style="margin-left: 360px;margin-top:180px;"/>');
+		if (FacebookID != "error")
+			homeSearch("%", 5);
+		$("#homeVideos").show();
+		$("#homeHeader").show();
+		$("#homeVideosWrapper").show();
+
+		
+
+		
+	}
+
+	$("#home").click(function(){ 
+		relFriendsAJAX.abort();
+		clearSelectedCategory();
+		$("#livesearch").hide();
+		$(".links").hide();
+		$(".preview").hide();
+		$(".related").hide();
+		$("#homeHeader").show();
+		$("#homeVideosWrapper").show();
+		$("#homeVideos").show();
+		Home(); 
+	});
+
+	function GetNumberOfVideos() {
+		var number;
+		$.ajax({
+			type : 'POST',
+			url : 'GetNumberOfVideos.php',
+			dataType : 'json',
+			async: false,
+			data: {
+				facebookid: FacebookID
+			},
+			success : function(data){
+				number = data.number;
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+		return number;
+
+	}
+
+	function GetTopCategories() {	
+		var html = '';
+		$.ajax({
+			type : 'GET',
+			url : 'DBGetTopCategories.php',
+			dataType : 'json',
+			async: false,
+			data: {
+				facebookid: FacebookID
+			},
+			success : function(data) {
+				jQuery.each(data, function(index,value) {
+					html = html + '<div class="category" id="'+ value.id +'">'+ value.name +'</div>';
+					if (index == 3)
+						return true;
+				});
+				$("#topCat").html(html);
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+	}
+
+	
+	
+
+	/*Display the number of videos for a Category*/
+	function Numbers() {
+		$.each($('.category'), function() {
+			var category = this.id;
+			$.ajax({
+				type : 'POST',
+				url : 'DBCountVideos.php',
+				dataType : 'json',
+				async: true,
+				data: {
+					category : category,
+					facebookid: FacebookID
+				},
+				success : function(data){
+					var select = "#"+category+".category";
+					$(select).append(" ("+data.num+")");
+					$(select).show();
+				},
+				error : function(XMLHttpRequest, textStatus, errorThrown) {
+					var select = "#"+category+".category";
+					$(select).append(" (0)");
+					$(select).show();
+				}
+			});
+			
+		});
+	}
+
+	/*Display Details on Click of a video*/
+	function VideoDetails(VideoID, options) {
+		relFriendsAJAX.abort();
+		$.ajax({
+			type : 'POST',
+			url : 'DBGetDetailsFromYoutubeID.php',
+			dataType : 'json',
+			async: true,
+			data: {
+				youtubeid : VideoID,
+				facebookid: FacebookID
+			},
+			success : function(data){
+				$(".links").hide();
+				$(".preview").hide();
+				$("#livesearch").hide();
+// 				$("#homeHeader").hide();
+				$("#homeVideos").hide();
+				if (document.getElementById("categories").style.display!="none")
+					$("#categories").hide('slide',{direction:'right'},1000);
+				$("#homeVideosWrapper").hide();
+// 				hideAll();
+				
+				time = '<span id="details_videoTime">'+ data.passedTime +'</span>';
+				video = '<object style="height: 390px; width: 540px"><param name="movie" value="https://www.youtube.com/v/'+VideoID+'?'+options+'&version=3"><param name="allowFullScreen" value="true"><param name="allowScriptAccess" value="always"><embed src="https://www.youtube.com/v/'+VideoID+'?'+options+'&version=3&feature=player_embedded&feature=player_embedded" type="application/x-shockwave-flash" allowfullscreen="true" allowScriptAccess="always" width="450" height="220"></object>';
+// 				category = '<span id="details_category">' + data.category + '</span><img class="deletepost" id="'+VideoID+'" src="img/delete1.png" onmouseover="$(this).attr(\'src\',\'img/delete2.png\');" onmouseout="$(this).attr(\'src\',\'img/delete1.png\');" />'+ time;
+				category = '<span id="details_category">' + data.category + '</span>'+ time;
+				options = '<span id="details_videoOptions">   <div style="float:left;"><div class="deletepost" id="'+VideoID+'"> <img style="float:left; margin-right:2px;"  src="img/recbin_grey.png" onmouseover="$(this).attr(\'src\',\'img/recbin_black.png\');" onmouseout="$(this).attr(\'src\',\'img/recbin_grey.png\');" />  Delete Video</div></div>     <br style="clear:all;">         <span class="wallpost" id="'+data.id+'"><span class="wallpost" id="'+data.id+'" style="float:left;"><img id="videoIcon" src="img/timeline.png"></span>Share on your Timeline</span><br><br></span>';
+				title = '<span id="details_title">'+data.title  + '</span><br>';
+				
+				clearSelectedCategory();
+				$(".preview").html(category + title + video + options );
+				$("#content").show();
+				$(".preview").show();
+				$(".related").html('<span style="font-size:11px; color:#272727; float:left;clear:both;"> Loading Related Friends...</span><br clear="all"><img src="./img/loading.gif" title="Loading..." />');
+				$(".related").show();
+				$(".detailsWrapper").slideDown('slow', function() { });
+				ShowRelated(VideoID);
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+		
+	}
+
+	/* Display related friends */
+	function ShowRelated(VideoID) {
+
+		relFriendsAJAX.abort();
+		relFriendsAJAX = $.ajax({
+			type : 'POST',
+// 			url : 'GetRelated.php',
+			url : 'YouFriends.php',
+			dataType : 'json',
+			async: true,
+			data: {
+				videoid : VideoID,
+				facebookid: FacebookID
+			},
+			success : function(data){
+				var relatedFriends = '<br clear="all"><span style="font-size:15px; font-weight: bold;color:#272727; float:left;clear:both;"><img src="img/friends.png" style="margin-right:3px;">Related  Friends</span><br>';
+				var separator = '<br clear="all"><div class="separator"></div>';
+				jQuery.each(data, function(index,value) {
+
+					FriendId = index;
+					name = value.name;
+					relatedFriends = relatedFriends + '<div class="relatedFriend">';
+					relatedFriends = relatedFriends + '<a  href="http://www.facebook.com/profile.php?id=' + FriendId +'" target="_blank"><img id="friendPic" src="https://graph.facebook.com/' + FriendId + '/picture" title="' + name + '"/></a>';
+					relatedFriends = relatedFriends + '<a  href="http://www.facebook.com/profile.php?id=' + FriendId +'" target="_blank"><div id="friendName">'+ name +'</div></a>';
+					relVideos = value.related_videos;
+					relatedFriends = relatedFriends + '<div id="friendVideos">';
+					jQuery.each(relVideos, function(index,value) {
+						title = value.title;
+						youtubeid = value.youtubeid;
+						playButton = '<a href="http://www.youtube.com/watch?v=' +youtubeid+ '" target="_blank" ><img id="playbutton" src="./img/youplay.png" title="Play" /></a>';
+						relatedFriends = relatedFriends + playButton + '<a href="http://www.youtube.com/watch?v=' +youtubeid+ '" target="_blank" id="playTitle">' + title+ '</a><br>' ;
+							
+					});
+					relatedFriends = relatedFriends + '</div></div>';
+					relatedFriends = relatedFriends + separator;
+					$(".related").html(relatedFriends);
+					
+				});
+				$(".related").html(relatedFriends);
+				if (data == '')
+					$(".related").html('<span style="font-size:11px; color:#272727; float:left;clear:both;"> No Related Friends Found</span>');
+
+					$(".related").show();
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			}
+		});
+		
+	}
+
+
+	/*Display Videos On Click Of A Category*/
+	function GetTitles(VideoArray, SelectedMenu) {
+		var TitleResult = "";
+		relFriendsAJAX.abort();
+		jQuery.each(VideoArray, function(index,value) {
+			var ThisID = value ;
+			$.ajax({
+				type : 'POST',
+				url : 'DBGetTitle.php',
+				dataType : 'json',
+				async: false,
+				data: {
+					videoid : ThisID,
+					facebookid: FacebookID
+				},
+				success : function(data){
+					var preview = '<span class="video_left" id="'+data.id+'"><img id="videoImg" src="http://img.youtube.com/vi/'+data.id+'/1.jpg" alt="'+data.title+'" /></span>';
+					var title = '<span class="video_title" id="'+data.id+'">'+data.title+'</span>';
+					var time = '<span id="videoTime">'+ data.passedTime +'</span>';
+					var options = '<img class="deletepost" id="'+data.id+'" src="img/delete1.png" onmouseover="$(this).attr(\'src\',\'img/delete2.png\');" onmouseout="$(this).attr(\'src\',\'img/delete1.png\');" /> <span class="video_options"><br><span class="wallpost" id="'+data.id+'"><img id="videoIcon" src="img/timeline.png"></span><span class="wallpost" id="'+data.id+'">Share on your Timeline</span><br><img class="askfriends" id="videoIcon" src="img/friends.png"><span class="askfriends" id="'+data.id+'">Related Friends</span><br><span class="videodetails" id="'+data.id+'" ><img id="videoIcon" src="img/video_details.png"></span><span class="videodetails" id="'+data.id+'">View Details</span>'+ time +'</span>';
+ 					TitleResult = TitleResult+'<span class="deleteVideo" id="'+data.id+'"><span class="video">'+preview+'<span class="video_right">' + title +' '+ options + '</span></span><br clear="all"><div class="separator"></div>' + '</span>';
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					
+				}
+			});
+		});
+
+		$(SelectedMenu).html(TitleResult);
+		$(SelectedMenu).show();
+	}
+
+
+	function GetIdsForCategory(category, SelectedMenu) {
+		$.ajax({
+			type : 'POST',
+			url : 'DBcategory.php',
+			dataType : 'json',
+			async: false,
+			data: {
+				category : category,
+				facebookid: FacebookID
+			},
+			success : function(data){
+				var IDs = data.msg.slice(0, -1);
+				var VideoArray = IDs.split(",");
+				GetTitles(VideoArray, SelectedMenu);
+			},
+			error : function(XMLHttpRequest, textStatus, errorThrown) {
+				
+			}
+		});
+	}
+
+
+	$(".searchBar").keyup(function(){
+
+
+		str = $(this).val();
+		if (str.length==0){
+			relFriendsAJAX.abort();
+			clearSelectedCategory();
+			$("#livesearch").hide();
+			$(".links").hide();
+			$(".preview").hide();
+			$(".related").hide();
+			$("#homeHeader").show();
+			$("#homeVideosWrapper").show();
+			$("#homeVideos").show();
+			return;
+		}
+		      
+		if (window.XMLHttpRequest) {
+		// code for IE7+, Firefox, Chrome, Opera, Safari
+		      xmlhttp=new XMLHttpRequest();
+		}
+		else {
+		      // code for IE6, IE5
+		      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		xmlhttp.onreadystatechange=function() {
+
+			if (xmlhttp.readyState==4 && xmlhttp.status==200){
+				document.getElementById("livesearch").innerHTML=xmlhttp.responseText;
+					
+			}
+		}
+		clearSelectedCategory();
+		$(".links").hide();
+		$(".preview").hide();
+		$(".related").hide();
+// 		$("#homeHeader").hide();
+		$("#homeVideosWrapper").hide();
+		$("#content").show();
+		$("#livesearch").show();
+		$("#livesearch").html('<img src="./img/loading.gif" title="Loading..." style="margin-left: 200px;margin-top:200px;"/>');
+		xmlhttp.open("GET","livesearch.php?u="+FacebookID+"&q="+str,true);
+		xmlhttp.send();
+		relFriendsAJAX.abort();
+	});
+
+	function homeSearch(query, limit) {
+		str = query;
+		var results;
+		if (str.length==0){
+			$("#livesearch").hide();
+			$(".links").hide();
+			return;
+		}
+		      
+		if (window.XMLHttpRequest) {
+		// code for IE7+, Firefox, Chrome, Opera, Safari
+		      xmlhttp=new XMLHttpRequest();
+		}
+		else {
+		      // code for IE6, IE5
+		      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		xmlhttp.onreadystatechange=function() {
+
+			if (xmlhttp.readyState==4 && xmlhttp.status==200){
+				document.getElementById("homeVideos").innerHTML=xmlhttp.responseText;
+			}
+		}
+		xmlhttp.open("GET","livesearch.php?u="+FacebookID+"&q="+str, false);//+"&l="+limit
+		xmlhttp.send();
+// 		return results;
+		relFriendsAJAX.abort();
+	}
+
+	function hideAll() {
+		$(".preview").hide();
+		$(".links").hide();
+		$("#livesearch").hide();
+		$("#homeHeader").hide();
+		$("#homeVideos").hide();
+		$(".related").hide();
+		$("#homeVideosWrapper").hide();
+	}
+
+
+	$(".category").click(function(){
+// 		document.getElementById(this.id).borderRightColor = 'solid red';
+// 		document.getElementById(this.id).borderRightWidth = '2px';
+
+		$(".preview").hide();
+		$(".links").hide();
+		$("#livesearch").hide();
+// 		$("#homeHeader").hide();
+		$("#homeVideos").hide();
+		$(".related").hide();
+		var SelectedMenu = "#"+this.id+".links";
+		var VideoArray;
+		$(SelectedMenu).html('<img src="./img/loading.gif" title="Loading..." style="margin-left: 200px;margin-top:200px;"/>');
+		$(SelectedMenu).show();
+		GetIdsForCategory(this.id, SelectedMenu);
+		relFriendsAJAX.abort();
+		if (document.getElementById("categories").style.display=="none") {
+			$("#categories").show('slide',{direction:'right'},1000);
+			$("#moreCat").html('hide categories');
+		}
+		else {
+			$("#categories").hide('slide',{direction:'right'},1000);
+			$("#moreCat").html('show categories');
+		}
+		clearSelectedCategory();
+		document.getElementById(this.id).style.background = '#1a1a1a';
+		document.getElementById(this.id).style.borderLeft= 'solid red 2px';
+	});
+
+	function clearSelectedCategory() {
+
+		document.getElementById("AV").style.background = "";
+		document.getElementById("AV").style.borderLeft= "";
+
+		document.getElementById("Co").style.background = "";
+		document.getElementById("Co").style.borderLeft= "";
+
+		document.getElementById("Ed").style.background = "";
+		document.getElementById("Ed").style.borderLeft= '';
+
+		document.getElementById("En").style.background = "";
+		document.getElementById("En").style.borderLeft= '';
+
+		document.getElementById("FA").style.background = "";
+		document.getElementById("FA").style.borderLeft= '';
+
+		document.getElementById("Ga").style.background = "";
+		document.getElementById("Ga").style.borderLeft= '';
+
+		document.getElementById("HS").style.background = "";
+		document.getElementById("HS").style.borderLeft= '';
+
+		document.getElementById("Mu").style.background = "";
+		document.getElementById("Mu").style.borderLeft= '';
+
+		document.getElementById("NP").style.background = '';
+		document.getElementById("NP").style.borderLeft= '';
+
+		document.getElementById("NA").style.background = '';
+		document.getElementById("NA").style.borderLeft= '';
+
+		document.getElementById("ST").style.background = '';
+		document.getElementById("ST").style.borderLeft= '';
+
+		document.getElementById("Sp").style.background = '';
+		document.getElementById("Sp").style.borderLeft= '';
+
+		document.getElementById("PA").style.background = '';
+		document.getElementById("PA").style.borderLeft= '';
+
+		document.getElementById("TE").style.background = '';
+		document.getElementById("TE").style.borderLeft= '';
+
+		document.getElementById("PB").style.background = '';
+		document.getElementById("PB").style.borderLeft= '';
+
+		document.getElementById("Other").style.background = '';
+		document.getElementById("Other").style.borderLeft= '';
+	}
+
+// 	$(".goHome").click( Home() );
+	$(".goHome").click(function(){
+		Home();
+	});
+
+	$("body").delegate("#moreCat", "click", function(){
+// 		if (document.getElementById("categories").style.display=="none")
+// 			$("#categories").show("slide", { direction: "up"}, 'medium');
+// 		else
+// 			$("#categories").hide("slide", { direction: "up"}, 'medium');
+
+
+		if (document.getElementById("categories").style.display=="none"){
+			$("#categories").show('slide',{direction:'right'},1000);
+			$("#moreCat").html('hide categories');
+		}
+		else {
+			$("#categories").hide('slide',{direction:'right'},1000);
+			$("#moreCat").html('show categories');
+		}
+
+// 		$("#categories").slideToggle('medium', function() { });
+		
+	});
+	
+	
+	$("body").delegate(".video_left", "click", function(){
+
+		VideoDetails(this.id, "autoplay=1");
+	});
+
+	$("body").delegate(".video_title", "click", function(){
+
+		VideoDetails(this.id,"");
+	});
+
+	$("body").delegate(".videodetails", "click", function(){
+
+		VideoDetails(this.id,"");
+	});
+   
+	$("body").delegate(".wallpost", "click", function(){
+		var videoid = this.id;
+		$.ajax({
+				type : 'POST',
+				url : 'PostToWall.php',
+				dataType : 'json',
+				async: false,
+				data: {
+					videourl : "http://www.youtube.com/watch?v="+videoid
+				},
+				success : function(data){
+// 					if (data.msg == "success")
+// // 						$("#"+videoid+".wallpost").html(" ...Successfully posted on Your Wall");
+// 					else 
+// 						$("#"+videoid+".wallpost").append(" ... An error occured! Try Again!");
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					$("#"+videoid+".wallpost").append(" ... An error occured! Try Again!");
+				}
+		});
+
+		$("#"+videoid+".wallpost").show();
+	});
+
+      
+	/* Delete video */
+	$("body").delegate(".deletepost", "click", function(){
+		var videoid = this.id;
+		$.ajax({
+				type : 'POST',
+				url : 'DeleteVideo.php',
+				dataType : 'json',
+				async: false,
+				data: {
+					videoid : videoid,
+					facebookid: FacebookID
+				},
+				success : function(data){
+					if (data.msg == "success"){
+// 						$("#"+videoid+".deletepost").append("... Successfully Deleted");
+						$("#"+videoid+".deleteVideo").slideUp('slow', function() { });
+						$(".detailsWrapper").slideUp('slow', function() { });
+						Home();
+					}
+					else 
+						$("#"+videoid+".deletepost").append("An error occured! Try Again!");
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					$("#"+videoid+".deletepost").append("An error occured! Try Again!");
+				}
+		});
+
+// 		$("#"+videoid+".deletepost").show();
+	});
+
+	
+
+
+});
+
+	$(function(){
+	      $('#content').slimscroll({
+			height: '400px',
+			width: '780px',
+			railVisible: true,
+			resumePageScroll: true,
+	// 				  opacity: 0.2,
+			wheelStep: 10,
+	      });
+		
+	});
+
+	$(function(){
+	      $('#homeVideosWrapper').slimscroll({
+			height: '398px',
+			width: '780px',
+			railVisible: true,
+			resumePageScroll: true,
+			wheelStep: 10
+	      });
+		
+	});
+
+</script>
+
+</head>
+<body>
+<div id="fb-root"></div>
+<div id="container">
+	<div id="searchForm">
+		<form autocomplete="off">
+			<input type="text" class="searchBar" src="img/home.png" name="query" size="35" " /><!--onkeyup="showResult(value)-->
+		</form>
+	</div>
+
+	<div id="header">
+		<!--<img src="img/logo.png" ></img>-->
+<!-- 	      <img src="img/logo_new.png" style="margin-bottom:10px;" ></img> -->
+		<img src="img/logo_letters.png" style="border-bottom-left-radius:10px;border-top-right-radius:10px;" ></img>		
+		<img src="img/videos_logo.png" id="videos_logo"></img>		
+		<img src="img/home.png" id="home"></img>
+	</div>
+<!-- 	<div class="categoriesWrapper"> -->
+	<div id="categories" style="display:none">
+	<!--<div id="category_title" > hide categories</div>-->
+		<div class="category" id="AV" >Autos & Vehicles</div>
+
+		<div class="category" id="Co" >Comedy</div>
+
+		<div class="category" id="Ed" >Education</div>
+
+		<div class="category" id="En">Entertainment</div>
+
+		<div class="category" id="FA">Film & Animation</div>
+
+		<div class="category" id="Ga">Gaming</div>
+
+		<div class="category" id="HS">Howto & Style</div>
+
+		<div class="category" id="Mu">Music</div>
+
+		<div class="category" id="NP">News & Politics</div>
+
+		<div class="category" id="NA">Nonprofits & Activism</div>
+
+		<div class="category" id="ST">Science & Technology</div>
+
+		<div class="category" id="Sp">Sports</div>
+
+		<div class="category" id="PA">Pets & Animals</div>
+
+		<div class="category" id="TE">Travel & Events</div>
+
+		<div class="category" id="PB"> People & Blogs</div>
+
+		<div class="category" id="Other" style="border-bottom-right-radius:5px;">Other</div>
+
+	</div>
+<!-- 	</div> -->
+	
+	
+	<div class="main">
+		<div id="homeHeader"></div>
+		<div id="content">
+			
+			<div class="detailsWrapper">
+				<div class = "preview" style="display:none"> </div>
+				<div class = "related" style="display:none"> </div>
+			</div>
+			<div class="links" id="AV" style="display:none"></div>
+
+			<div class="links" id="Co" style="display:none"></div>
+
+			<div class="links" id="Ed" style="display:none"></div>
+
+			<div class="links" id="En" style="display:none"></div>
+
+			<div class="links" id="FA" style="display:none"></div>
+
+			<div class="links" id="Ga" style="display:none"></div>
+
+			<div class="links" id="HS" style="display:none"></div>
+
+			<div class="links" id="Mu" style="display:none"></div>
+
+			<div class="links" id="NP" style="display:none"></div>
+
+			<div class="links" id="NA" style="display:none"></div>
+
+			<div class="links" id="Sh" style="display:none"></div>
+
+			<div class="links" id="ST" style="display:none"></div>
+
+			<div class="links" id="Sp" style="display:none"></div>
+
+			<div class="links" id="PA" style="display:none"></div>
+
+			<div class="links" id="TE" style="display:none"></div>
+			
+			<div class="links" id="PB" style="display:none"></div>
+
+			<div class="links" id="Other" style="display:none"></div>
+
+			<div id="livesearch"> </div>
+			<div id="homeVideosWrapper">
+				<div id="homeVideos"> </div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

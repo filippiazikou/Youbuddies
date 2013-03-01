@@ -1,0 +1,295 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Youtube Buddies</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" type="text/css" href="style.css" />
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+	var FacebookID="error";
+
+	/*Get Facebook Id*/
+	$.ajax({
+		type : 'POST',
+		url : 'FacebookUser.php',
+		dataType : 'json',
+		async: false,
+		success : function(data){
+			FacebookID = data.user;
+			$(".head1").append(data.user);
+			$(".head1").show();
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown) {
+			
+		}
+	});
+
+	/*Display the number of videos for a Category*/
+	$.each($('.category'), function() {
+		var category = this.id;
+		$.ajax({
+			type : 'POST',
+			url : 'DBCountVideos.php',
+			dataType : 'json',
+			async: false,
+			data: {
+				category : category,
+				facebookid: FacebookID
+			},
+			success : function(data){
+				var select = "#"+category+".category";
+				$(select).append(" ("+data.num+")");
+				$(select).show();
+			},
+			error : function(XMLHttpRequest, textStatus, errorThrown) {
+				var select = "#"+category+".category";
+				$(select).append(" (0)");
+				$(select).show();
+			}
+		});
+		
+	});
+
+
+	function VideoDetails(VideoID) {
+		$(".links").hide();
+		$(".preview").hide();
+		$(".preview").html('<object style="height: 390px; width: 640px"><param name="movie" value="https://www.youtube.com/v/'+VideoID+'?version=3&feature=player_embedded&feature=player_embedded"><param name="allowFullScreen" value="true"><param name="allowScriptAccess" value="always"><embed src="https://www.youtube.com/v/'+VideoID+'?version=3&feature=player_embedded&feature=player_embedded" type="application/x-shockwave-flash" allowfullscreen="true" allowScriptAccess="always" width="284" height="238"></object>');
+		$(".preview").show();
+	}
+
+
+	/*Display Links On Click Of A Category*/
+	function GetTitles(VideoArray, SelectedMenu) {
+		var TitleResult = "";
+		jQuery.each(VideoArray, function(index,value) {
+			var ThisID = value ;
+			$.ajax({
+				type : 'POST',
+				url : 'DBGetTitle.php',
+				dataType : 'json',
+				async: false,
+				data: {
+					videoid : ThisID,
+					facebookid: FacebookID
+				},
+				success : function(data){
+					var preview = '<img src="http://img.youtube.com/vi/'+data.id+'/1.jpg" alt="'+data.title+'" />';
+					var title = '<span class="video_title" id="'+data.id+'">'+data.title+'</span>';
+					var options = '<span class="video_options"><span class="delete" id="'+data.id+'">delete</span><span class="wallpost" id="'+data.id+'"> | Post To Wall</span><span class="askfriends" id="'+data.id+'"> | AskMyFriends</span></span>';
+ 					TitleResult = TitleResult+"<span class='video'><span class=\"video_left\" id='"+data.id+"'>"+preview+"</span><span class=\"video_right\">"+title+"</span>"+options+"</span><br clear='all'><div class=\"separator\"></div>";
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					
+				}
+			});
+		});
+
+		$(SelectedMenu).html(TitleResult);
+		$(SelectedMenu).show();
+	}
+
+
+	function GetIdsForCategory(category, SelectedMenu) {
+		$.ajax({
+			type : 'POST',
+			url : 'DBcategory.php',
+			dataType : 'json',
+			async: false,
+			data: {
+				category : category,
+				facebookid: FacebookID
+			},
+			success : function(data){
+				var IDs = data.msg.slice(0, -1);
+				var VideoArray = IDs.split(",");
+				GetTitles(VideoArray, SelectedMenu);
+			},
+			error : function(XMLHttpRequest, textStatus, errorThrown) {
+				
+			}
+		});
+	}
+
+
+	$(".category").click(function(){
+		$(".preview").hide();
+		$(".links").hide();
+		var SelectedMenu = "#"+this.id+".links";
+		var VideoArray;
+		GetIdsForCategory(this.id, SelectedMenu);
+	});
+	
+	
+	$("body").delegate(".video_left", "click", function(){
+		VideoDetails(this.id);
+	});
+
+	$("body").delegate(".video_title", "click", function(){
+		VideoDetails(this.id);
+	});
+   
+// 	$("body").delegate(".wallpost").click(function() {
+// 		var videoid = this.id;
+// 		$.ajax({
+// 				type : 'POST',
+// 				url : 'PostToWall.php',
+// 				dataType : 'json',
+// 				async: false,
+// 				data: {
+// 					videourl : "http://www.youtube.com/watch?v="+videoid
+// 				},
+// 				success : function(data){
+// 					if (data.msg == "success")
+// 						$(".video_options_replay").html("Successfully posted on Your Wall");
+// 					else 
+// 						$(".video_options_replay").html("An error occured! Try Again!");
+// 				},
+// 				error: function(XMLHttpRequest, textStatus, errorThrown) {
+// 					$(".video_options_replay").html("An error occured! Try Again!");
+// 				}
+// 		});
+// 
+// 		$(".video_options_replay").hide();
+// 		$(".video_options_replay").show("slow");
+// 	});
+// 
+// 	$("#DeleteVideo").click(function() {
+// 		$.ajax({
+// 				type : 'POST',
+// 				url : 'DeleteVideo.php',
+// 				dataType : 'json',
+// 				async: false,
+// 				data: {
+// 					videoid : YoutubeId,
+// 					facebookid: FacebookID
+// 				},
+// 				success : function(data){
+// 					if (data.msg == "success")
+// 						$("#OptionMsg").html("Successfully Deleted...<span id='UndoDelete'> Undo!</span>");
+// 					else 
+// 						$("#OptionMsg").html("An error occured! Try Again!");
+// 				},
+// 				error: function(XMLHttpRequest, textStatus, errorThrown) {
+// 					$("#OptionMsg").html("An error occured! Try Again!");
+// 				}
+// 		});
+// 
+// 		$("#OptionMsg").hide();
+// 		$("#OptionMsg").show("slow");
+// 	});
+// 
+// 	$("body").delegate("#UndoDelete", "click", function(){
+// 		$.ajax({
+// 				type : 'POST',
+// 				url : 'UndoDelete.php',
+// 				dataType : 'json',
+// 				async: false,
+// 				data: {
+// 					videoid : YoutubeId,
+// 					facebookid: FacebookID
+// 				},
+// 				success : function(data){
+// 					if (data.msg == "success")
+// 						$("#OptionMsg").hide();
+// 					else 
+// 						$("#OptionMsg").html("An error occured! Try Again!");
+// 				},
+// 				error: function(XMLHttpRequest, textStatus, errorThrown) {
+// 					$("#OptionMsg").html("An error occured! Try Again!");
+// 				}
+// 		});
+// 
+// 	});
+
+
+});
+
+</script>
+
+</head>
+<body>
+
+<div id="container">
+	<div id="header">
+		<img src="img/logo.png" ></img>
+		<img src="img/info.png" id="info"></img>
+		<img src="img/videos_logo.png" id="videos_logo"></img>		
+		<img src="img/home.png" id="home"></img>
+	</div>
+	<div id="categories">
+	<div id="category_title"> Categories</div>
+
+	  <div class="category" id="AV">Autos & Vehicles</div>
+
+	  <div class="category" id="Co">Comedy</div>
+
+	  <div class="category" id="Ed">Education</div>
+
+	  <div class="category" id="En">Entertainment</div>
+
+	  <div class="category" id="FA">Film & Animation</div>
+
+	  <div class="category" id="Ga">Gaming</div>
+
+	  <div class="category" id="HS">Howto & Style</div>
+
+	  <div class="category" id="Mu">Music</div>
+
+	  <div class="category" id="NP">News & Politics</div>
+
+	  <div class="category" id="NA">Nonprofits & Activism</div>
+
+	  <div class="category" id="ST">Science & Technology</div>
+
+	  <div class="category" id="Sp">Sports</div>
+
+	  <div class="category" id="PA">Pets & Animals</div>
+
+	  <div class="category" id="TE">Travel & Events</div>
+
+	  <div class="category" id="Other">Other</div>
+
+	</div>
+
+	<div class="main">
+	  <div class = "preview" style="display:none"> </div>
+	  <div class="links" id="AV" style="display:none"></div>
+
+	  <div class="links" id="Co" style="display:none"></div>
+
+	  <div class="links" id="Ed" style="display:none"></div>
+
+	  <div class="links" id="En" style="display:none"></div>
+
+	  <div class="links" id="FA" style="display:none"></div>
+
+	  <div class="links" id="Ga" style="display:none"></div>
+
+	  <div class="links" id="HS" style="display:none"></div>
+
+	  <div class="links" id="Mu" style="display:none"></div>
+
+	  <div class="links" id="NP" style="display:none"></div>
+
+	  <div class="links" id="NA" style="display:none"></div>
+
+	  <div class="links" id="ST" style="display:none"></div>
+
+	  <div class="links" id="Sp" style="display:none"></div>
+
+	  <div class="links" id="PA" style="display:none"></div>
+
+	  <div class="links" id="TE" style="display:none"></div>
+
+	  <div class="links" id="Other" style="display:none"></div>
+<!-- <div class="separator"></div> -->
+	</div>
+</div>
+
+</body>
+</html>

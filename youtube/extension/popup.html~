@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+
+	<title>rapid-DEV.net Jquery Ajax JSON Cross Domain Example</title>
+
+	<style type="text/css">
+		body, html { font-family:helvetica,arial,sans-serif; font-size:90%;}
+	</style>
+</head>
+
+<script>
+
+jQuery(document).ready(function(){
+
+	chrome.tabs.getSelected(null, function(tab) {
+		 Main(tab.url);
+	});
+	
+	function Main(url) {
+		/*Check Facebook Connection*/
+		var ConUrl = "http://cyberang3l.ath.cx:33335/youtube/CheckFbConnection.php?asf=asd";
+		
+		$.getJSON(ConUrl + "&jsoncallback=?", function(data){
+			Answer = data.Answer;
+			if (Answer == "connected") {
+				/*Check Youtube Video*/
+				var YoutubeLink = "http://www.youtube.com";
+				if (url.substring(0, YoutubeLink.length) == YoutubeLink) {
+					/*Find Video id*/
+					var video_id = url.split('v=')[1];
+					$("#friends").html('<iframe src="http://cyberang3l.ath.cx:33335/youtube/YouFriends.php?videoid='+video_id+'" frameborder="0" ></iframe>');
+					$("#friends").show();
+					$("#InviteFriends").show();
+				}
+				else {
+					$("#friends").html('No Youtube Link Found!');
+					$("#friends").show();
+					$("#InviteFriends").show();
+				}
+			}
+		});
+
+		
+
+	}
+
+	if (localStorage.yourecord=="on")
+		$("#btn").html('<span align="middle">Stop Recording</span>');
+	else
+		$("#btn").html('<span align="middle">Start Recording</span>');
+
+	$("#btn").show();
+	$("#btn").click(function () {
+			if (localStorage.yourecord=="off") {
+				$("#btn").html('<span align="middle">Stop Recording</span>');
+				localStorage.yourecord="on";
+			}
+			else {
+				$("#btn").html('<span align="middle">Start Recording</span>');
+				localStorage.yourecord="off";
+			}
+	});
+
+	$("#btn").hover(
+		function () {
+			this.style.cursor='pointer' 
+			
+		}, 
+		function () {
+			this.style.background='#FFFFFF';
+	});
+
+
+});
+
+
+
+</script>
+<body>
+	<iframe src="http://cyberang3l.ath.cx:33335/youtube/DisplayUser.php" scrolling="no" style="overflow:hidden" frameborder="0" height="25px"></iframe>
+	<div id="btn" style="display:none;" onMouseOver="this.style.cursor='hand'">
+		
+	</div>
+	<br>
+	<div id="friends" style="display:none;">	
+	</div>
+	<br>
+	<div id="InviteFriends" style="display:none;">
+		<a href="http://cyberang3l.ath.cx:33335/youtube/InviteFriends.php" target="_blank"> Invite your Friends to join the application! </a>
+	</div>
+</body>
+</html>

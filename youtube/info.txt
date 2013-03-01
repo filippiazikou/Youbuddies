@@ -1,0 +1,18 @@
+Welcome to Youtube Buddies!
+
+!!! This Application requires Google Chrome Browser and YouBuddies extension !!!
+
+Find Your Friends who watch the same and similar youtube Video with you!
+Requirements:
+- Facebook Application (Youtube Buddies)
+- Chrome Extension (YouBuddies)
+
+What can you do with this application?
+1. Record your watched Youtube Videos
+2. Find Friends who have watched a similar Youtube Video
+3. Stop and Start Recording whenever you want by pushing a button
+4. Post a Video on your Timeline
+
+Enjoy! 
+Application Developed by: Kostas Ntem and Filippia Zikou!
+For further information please contact us!
