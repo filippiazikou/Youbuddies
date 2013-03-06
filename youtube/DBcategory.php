@@ -7,7 +7,7 @@
 	
 
 	/*Find Links of user from Database with the category given*/
-	$con = mysql_connect ("localhost:3306", "root", "fli2411");
+	$con = mysql_connect ("location", "username", "password");
         if (!$con) {
 		error(DB_ERR);
         }

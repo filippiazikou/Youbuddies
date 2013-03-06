@@ -17,7 +17,7 @@ if ( !isset($facebookID) ){
 // echo "id='$facebookID'<br>";
 
 
-$con = mysql_connect ("localhost:3306", "root", "fli2411");
+$con = mysql_connect ("location", "username", "password");
 if (!$con) {
 	error(DB_ERR);
 }

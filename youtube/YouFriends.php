@@ -24,7 +24,7 @@ $yt = new Zend_Gdata_YouTube();
 
 
 /*Connect To Database*/
-$con = mysql_connect ("localhost:3306", "root", "fli2411");
+$con = mysql_connect ("locations", "username", "password");
 if (!$con) {
 	error(DB_ERR);
 }

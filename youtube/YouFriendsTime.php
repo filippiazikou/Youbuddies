@@ -27,7 +27,7 @@ $yt = new Zend_Gdata_YouTube();
 
 
 /*Connect To Database*/
-$con = mysql_connect ("localhost:3306", "root", "fli2411");
+$con = mysql_connect ("location", "username", "password");
 if (!$con) {
 	error(DB_ERR);
 }
@@ -36,8 +36,8 @@ mysql_select_db("brain_browser", $con);
 
 /*Include Library for Facebook and Initialize*/
 $facebook = new Facebook(array(
-	'appId'  => '166815126764719',
-	'secret' => '5db9fed1b100246aee7d84e80b185e5a',
+	'appId'  => 'YOURAPPID',
+	'secret' => 'YOURAPPSECRET',
 	'cookie' => true,
 ));
 

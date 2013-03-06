@@ -15,13 +15,13 @@ Zend_Loader::loadClass('Zend_Gdata_YouTube');
 $yt = new Zend_Gdata_YouTube();
 
 $facebook = new Facebook(array(
-	'appId'  => '166815126764719',
-	'secret' => '5db9fed1b100246aee7d84e80b185e5a',
+	'appId'  => 'YOURAPPID',
+	'secret' => 'YOURAPPSECRET',
 	'cookie' => true,
 ));
 
 /*Connect to DataBase*/
-$con = mysql_connect ("localhost:3306", "root", "fli2411");
+$con = mysql_connect ("location", "username", "password");
 if (!$con) {
 	error(DB_ERR);
 }

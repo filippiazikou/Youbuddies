@@ -12,7 +12,7 @@ Zend_Loader::loadClass('Zend_Gdata_YouTube');
 
 /*Insert user - link - verb - category to database*/
 function InsertToDatabase($youtube, $category, $artist, $tags, $title, $user) {
-	$con = mysql_connect ("localhost:3306", "root", "fli2411");
+	$con = mysql_connect ("location", "username", "password");
         if (!$con) {
 		error(DB_ERR);
         }

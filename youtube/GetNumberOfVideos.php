@@ -2,7 +2,7 @@
 	$FacebokId = $_POST['facebookid'];
 
 	/*Connect To Database*/
-	$con = mysql_connect ("localhost:3306", "root", "fli2411");
+	$con = mysql_connect ("location", "username", "password");
 	mysql_select_db("brain_browser", $con);
 	
 	$res = mysql_query("SELECT count(*) as n FROM youtube WHERE fbid='$FacebokId'", $con);

@@ -5,8 +5,8 @@ require_once '../php-sdk/src/facebook.php';
 require "CosineSimilarity.php";
 /*Include Library for Facebook and Initialize*/
 $facebook = new Facebook(array(
-	'appId'  => '166815126764719',
-	'secret' => '5db9fed1b100246aee7d84e80b185e5a',
+	'appId'  => 'YOURAPPID',
+	'secret' => 'YOURAPPSECRET',
 	'cookie' => true,
 ));
 

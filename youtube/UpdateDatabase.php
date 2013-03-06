@@ -16,7 +16,7 @@
 
 
 	/*Connect to Database*/
-	$con = mysql_connect ("localhost:3306", "root", "fli2411");
+	$con = mysql_connect ("location", "username", "password");
 	if (!$con) {
 		echo "error on DB!";
 	}
@@ -25,8 +25,8 @@
 	/*Facebook Init*/
 	require_once '../php-sdk/src/facebook.php';
 	$config = array(
-		'appId'  => '166815126764719',
-		'secret' => '5db9fed1b100246aee7d84e80b185e5a',
+		'appId'  => 'YOURAPPID',
+		'secret' => 'YOURAPPSECRET',
 	);
 
 	$facebook = new Facebook($config);

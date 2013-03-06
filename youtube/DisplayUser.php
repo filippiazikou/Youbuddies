@@ -1,8 +1,8 @@
 <?php
 require '../php-sdk/src/facebook.php';
 	$facebook = new Facebook(array(
-		'appId'  => '166815126764719',
-		'secret' => '5db9fed1b100246aee7d84e80b185e5a',
+		'appId'  => 'YOURAPPID',
+		'secret' => 'YOURAPPSECRET',
 		'cookie' => true,
 	));
 	// Get User ID

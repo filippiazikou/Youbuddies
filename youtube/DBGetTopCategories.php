@@ -2,7 +2,7 @@
 require_once "CategoryNames.php";
 
 $FbId = $_GET['facebookid'];
-$con = mysql_connect ("localhost:3306", "root", "fli2411");
+$con = mysql_connect ("location", "username", "password");
 mysql_select_db("brain_browser", $con);
 
 $res = mysql_query ("SELECT category FROM youtube WHERE fbid='$FbId' GROUP BY category ORDER BY count(*) DESC", $con);

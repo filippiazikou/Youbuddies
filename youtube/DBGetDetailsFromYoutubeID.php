@@ -7,7 +7,7 @@
 	$FacebokId = $_POST['facebookid'];
 
 	/*Connect To Database*/
-	$con = mysql_connect ("localhost:3306", "root", "fli2411");
+	$con = mysql_connect ("location", "username", "password");
 	mysql_select_db("brain_browser", $con);
 	/*Check if video already exist*/
 	$res = mysql_query("SELECT * FROM youtube WHERE youtubeid='$YoutubeId' AND fbid='$FacebokId' ORDER BY date desc", $con);

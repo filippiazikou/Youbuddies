@@ -31,7 +31,7 @@ require_once '../php-sdk/src/facebook.php';
 
 /*Insert user - link - verb - category to database*/
 function InsertToDatabase($youtube, $category, $artist, $tags, $title, $user) {
-	$con = mysql_connect ("localhost:3306", "root", "fli2411");
+	$con = mysql_connect ("location", "username", "password");
         if (!$con) {
 		error(DB_ERR);
         }
@@ -72,8 +72,8 @@ function InsertToDatabase($youtube, $category, $artist, $tags, $title, $user) {
 function CheckFacebookConnection() {
 	// Create our Application instance (replace this with your appId and secret).
 	$facebook = new Facebook(array(
-		'appId'  => '166815126764719',
-		'secret' => '5db9fed1b100246aee7d84e80b185e5a',
+		'appId'  => 'YOURAPPID',
+		'secret' => 'YOURAPPSECRET',
 		'cookie' => true,
 	));
 	// Get User ID

@@ -5,8 +5,8 @@ $youtubeid = $_GET['youtubeid'];
 require_once '../php-sdk/src/facebook.php';
 // Create our Application instance (replace this with your appId and secret).
 $facebook = new Facebook(array(
-	'appId'  => '166815126764719',
-	'secret' => '5db9fed1b100246aee7d84e80b185e5a',
+	'appId'  => 'YOURAPPID',
+	'secret' => 'YOURAPPSECRET',
 	'cookie' => true,
 ));
 // Get User ID
@@ -24,7 +24,7 @@ else {
 }
 
 /*Connect to DataBase*/
-$con = mysql_connect ("localhost:3306", "root", "fli2411");
+$con = mysql_connect ("location", "username", "password");
 if (!$con) {
 	error(DB_ERR);
 }
